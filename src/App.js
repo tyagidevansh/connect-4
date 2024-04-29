@@ -11,9 +11,13 @@ function App() {
   const boardHeight = 6;
   const [gameState, setGameState] = useState(Array.from({ length: boardHeight }, () => Array(boardWidth).fill('0')));
   const [isRedNext, setIsRedNext] = useState(true);
+  const [gameOver, setGameOver] = useState(false);
   console.log(gameState);
   
   function handleClick(rowIndex, colIndex) {
+    if (gameOver) {
+      return;
+    }
     const copy = [...gameState];
 
     let lowestEmptyRowIndex = rowIndex;
@@ -23,8 +27,47 @@ function App() {
   
     copy[lowestEmptyRowIndex][colIndex] = isRedNext ? 'R' : 'B';
     setGameState(copy);
+    if (checkForWin(rowIndex, colIndex)) {
+      window.alert("You won!!");
+      setGameOver(true);
+    }
     setIsRedNext(!isRedNext);
   }
+
+  function checkForWin(rowIndex, colIndex) {
+    const token = isRedNext ? 'R' : 'B';
+    const board = [...gameState];
+    const directions = [-1, 0, 1];
+
+    function checkDirection(dx, dy) {
+      let count = 1;
+      let row = rowIndex + dx;
+      let col = colIndex + dy;
+
+      while (row >= 0 && row < board.length && col >= 0 && col < board[0].length) {
+        if (board[row][col] === token) {
+          count++;
+          if (count === 4) return true;
+        }  else {
+          count = 1;
+          break;
+        }
+        row += dx;
+        col += dy;
+      }
+      return false
+    }
+
+    for (const dx of directions) {
+      for (const dy of directions) {
+        if (dx === 0 && dy === 0) {
+          continue;
+        }
+        if (checkDirection(dx, dy)) return true;
+      }
+    }
+  }
+  
 
   return (
     <>
