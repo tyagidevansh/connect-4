@@ -1,9 +1,8 @@
+import React, { useState } from 'react';
 import './App.css';
-import {useState} from 'react';
 
-function Cell({value, onCellClick}) {
-  //var value = 0;
-  return <button className='gridCell' onClick = {onCellClick}> {value} </button>
+function Cell({ value, onCellClick }) {
+  return <button className={`cell ${value}`} onClick={onCellClick}>{value}</button>;
 }
 
 function App() {
@@ -12,125 +11,76 @@ function App() {
   const [gameState, setGameState] = useState(Array.from({ length: boardHeight }, () => Array(boardWidth).fill('0')));
   const [isRedNext, setIsRedNext] = useState(true);
   const [gameOver, setGameOver] = useState(false);
-  console.log(gameState);
-  
+
   function handleClick(rowIndex, colIndex) {
-    if (gameOver) {
+    if (gameOver || gameState[rowIndex][colIndex] !== '0') {
       return;
     }
-    const copy = [...gameState];
 
+    const copy = [...gameState];
     let lowestEmptyRowIndex = rowIndex;
+
     while (lowestEmptyRowIndex < boardHeight - 1 && copy[lowestEmptyRowIndex + 1][colIndex] === '0') {
       lowestEmptyRowIndex++;
     }
-  
+
     copy[lowestEmptyRowIndex][colIndex] = isRedNext ? 'R' : 'B';
     setGameState(copy);
-    if (checkForWin(rowIndex, colIndex)) {
-      window.alert("You won!!");
+
+    if (checkForWin(lowestEmptyRowIndex, colIndex)) {
+      window.alert(`${isRedNext ? 'Red' : 'Black'} player won!`);
       setGameOver(true);
     }
+
     setIsRedNext(!isRedNext);
   }
 
   function checkForWin(rowIndex, colIndex) {
     const token = isRedNext ? 'R' : 'B';
-    const board = [...gameState];
-    const directions = [-1, 0, 1];
+    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
 
-    function checkDirection(dx, dy) {
+    for (const [dx, dy] of directions) {
       let count = 1;
       let row = rowIndex + dx;
       let col = colIndex + dy;
 
-      while (row >= 0 && row < board.length && col >= 0 && col < board[0].length) {
-        if (board[row][col] === token) {
-          count++;
-          if (count === 4) return true;
-        }  else {
-          count = 1;
-          break;
-        }
+      while (row >= 0 && row < boardHeight && col >= 0 && col < boardWidth && gameState[row][col] === token) {
+        count++;
         row += dx;
         col += dy;
       }
-      return false
-    }
 
-    for (const dx of directions) {
-      for (const dy of directions) {
-        if (dx === 0 && dy === 0) {
-          continue;
-        }
-        if (checkDirection(dx, dy)) return true;
+      row = rowIndex - dx;
+      col = colIndex - dy;
+
+      while (row >= 0 && row < boardHeight && col >= 0 && col < boardWidth && gameState[row][col] === token) {
+        count++;
+        row -= dx;
+        col -= dy;
+      }
+
+      if (count >= 4) {
+        return true;
       }
     }
+
+    return false;
   }
-  
 
   return (
-    <>
-      <div className='row'>
-        <Cell value = {gameState[0][0]} onCellClick = {() => {handleClick(0, 0)}}/>
-        <Cell value = {gameState[0][1]} onCellClick = {() => {handleClick(0, 1)}}/>
-        <Cell value = {gameState[0][2]} onCellClick = {() => {handleClick(0, 2)}}/>
-        <Cell value = {gameState[0][3]} onCellClick = {() => {handleClick(0, 3)}}/>
-        <Cell value = {gameState[0][4]} onCellClick = {() => {handleClick(0, 4)}}/>
-        <Cell value = {gameState[0][5]} onCellClick = {() => {handleClick(0, 5)}}/>
-        <Cell value = {gameState[0][6]} onCellClick = {() => {handleClick(0, 6)}}/>
+    <div className="container">
+      <h1>Connect Four</h1>
+      <div className="game-board">
+        {gameState.map((row, rowIndex) => (
+          <div key={rowIndex} className="row">
+            {row.map((cell, colIndex) => (
+              <Cell key={colIndex} value={cell} onCellClick={() => handleClick(rowIndex, colIndex)} />
+            ))}
+          </div>
+        ))}
       </div>
-
-      <div className='row'>
-        <Cell value = {gameState[1][0]} onCellClick = {() => {handleClick(1, 0)}}/>
-        <Cell value = {gameState[1][1]} onCellClick = {() => {handleClick(1, 1)}}/>
-        <Cell value = {gameState[1][2]} onCellClick = {() => {handleClick(1, 2)}}/>
-        <Cell value = {gameState[1][3]} onCellClick = {() => {handleClick(1, 3)}}/>
-        <Cell value = {gameState[1][4]} onCellClick = {() => {handleClick(1, 4)}}/>
-        <Cell value = {gameState[1][5]} onCellClick = {() => {handleClick(1, 5)}}/>
-        <Cell value = {gameState[1][6]} onCellClick = {() => {handleClick(1, 6)}}/>
-      </div>
-
-      <div className='row'>
-        <Cell value = {gameState[2][0]} onCellClick = {() => {handleClick(2, 0)}}/>
-        <Cell value = {gameState[2][1]} onCellClick = {() => {handleClick(2, 1)}}/>
-        <Cell value = {gameState[2][2]} onCellClick = {() => {handleClick(2, 2)}}/>
-        <Cell value = {gameState[2][3]} onCellClick = {() => {handleClick(2, 3)}}/>
-        <Cell value = {gameState[2][4]} onCellClick = {() => {handleClick(2, 4)}}/>
-        <Cell value = {gameState[2][5]} onCellClick = {() => {handleClick(2, 5)}}/>
-        <Cell value = {gameState[2][6]} onCellClick = {() => {handleClick(2, 6)}}/>
-      </div>
-
-      <div className='row'>
-        <Cell value = {gameState[3][0]} onCellClick = {() => {handleClick(3, 0)}}/>
-        <Cell value = {gameState[3][1]} onCellClick = {() => {handleClick(3, 1)}}/>
-        <Cell value = {gameState[3][2]} onCellClick = {() => {handleClick(3, 2)}}/>
-        <Cell value = {gameState[3][3]} onCellClick = {() => {handleClick(3, 3)}}/>
-        <Cell value = {gameState[3][4]} onCellClick = {() => {handleClick(3, 4)}}/>
-        <Cell value = {gameState[3][5]} onCellClick = {() => {handleClick(3, 5)}}/>
-        <Cell value = {gameState[3][6]} onCellClick = {() => {handleClick(3, 6)}}/>
-      </div>
-
-      <div className='row'>
-        <Cell value = {gameState[4][0]} onCellClick = {() => {handleClick(4, 0)}}/>
-        <Cell value = {gameState[4][1]} onCellClick = {() => {handleClick(4, 1)}}/>
-        <Cell value = {gameState[4][2]} onCellClick = {() => {handleClick(4, 2)}}/>
-        <Cell value = {gameState[4][3]} onCellClick = {() => {handleClick(4, 3)}}/>
-        <Cell value = {gameState[4][4]} onCellClick = {() => {handleClick(4, 4)}}/>
-        <Cell value = {gameState[4][5]} onCellClick = {() => {handleClick(4, 5)}}/>
-        <Cell value = {gameState[4][6]} onCellClick = {() => {handleClick(4, 6)}}/>
-      </div>
-
-      <div className='row'>
-        <Cell value = {gameState[5][0]} onCellClick = {() => {handleClick(5, 0)}}/>
-        <Cell value = {gameState[5][1]} onCellClick = {() => {handleClick(5, 1)}}/>
-        <Cell value = {gameState[5][2]} onCellClick = {() => {handleClick(5, 2)}}/>
-        <Cell value = {gameState[5][3]} onCellClick = {() => {handleClick(5, 3)}}/>
-        <Cell value = {gameState[5][4]} onCellClick = {() => {handleClick(5, 4)}}/>
-        <Cell value = {gameState[5][5]} onCellClick = {() => {handleClick(5, 5)}}/>
-        <Cell value = {gameState[5][6]} onCellClick = {() => {handleClick(5, 6)}}/>
-      </div>
-    </>
+      {gameOver && <div className="game-over">Game Over!</div>}
+    </div>
   );
 }
 
