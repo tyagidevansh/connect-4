@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function Cell({ value, onCellClick }) {
@@ -11,6 +11,11 @@ function App() {
   const [gameState, setGameState] = useState(Array.from({ length: boardHeight }, () => Array(boardWidth).fill('0')));
   const [isRedNext, setIsRedNext] = useState(true);
   const [gameOver, setGameOver] = useState(false);
+  const [line, setLine] = useState("");
+
+  useEffect( () => {
+    console.log(line);
+  }, [line]);
 
   function handleClick(rowIndex, colIndex) {
     if (gameOver || gameState[rowIndex][colIndex] !== '0') {
@@ -26,9 +31,9 @@ function App() {
 
     copy[lowestEmptyRowIndex][colIndex] = isRedNext ? 'R' : 'B';
     setGameState(copy);
+    setLine(line + String(colIndex + 1));
 
     if (checkForWin(lowestEmptyRowIndex, colIndex)) {
-      window.alert(`${isRedNext ? 'Red' : 'Black'} player won!`);
       setGameOver(true);
     }
 
@@ -78,8 +83,10 @@ function App() {
             ))}
           </div>
         ))}
+        
       </div>
       {gameOver && <div className="game-over">Game Over!</div>}
+      
     </div>
   );
 }
