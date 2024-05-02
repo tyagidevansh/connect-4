@@ -14,7 +14,7 @@ namespace GameSolver {namespace Connect4 {
         public:
             static const int WIDTH = 7;
             static const int HEIGHT = 6;
-            //static const int MOVES_SEARCHED = 10;
+            static const int MOVES_SEARCHED = 10;
             static_assert(WIDTH < 10, "Board's width must be less than 10");
 
             bool canPlay(int col) const {
