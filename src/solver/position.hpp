@@ -2,12 +2,19 @@
 #define POSITION_HPP
 
 #include <string>
+#include <iostream>
+
+struct moveScore {
+    int move;
+    int score;
+};
 
 namespace GameSolver {namespace Connect4 {
     class Position {
         public:
             static const int WIDTH = 7;
             static const int HEIGHT = 6;
+            //static const int MOVES_SEARCHED = 10;
             static_assert(WIDTH < 10, "Board's width must be less than 10");
 
             bool canPlay(int col) const {
@@ -15,7 +22,7 @@ namespace GameSolver {namespace Connect4 {
             }
 
             void play(int col) {
-                board[col][height[col]] = 1+ moves % 2;
+                board[col][height[col]] = 1 + moves % 2;
                 height[col]++;
                 moves++;
             }
