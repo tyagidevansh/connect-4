@@ -1,7 +1,23 @@
 #include <iostream>
 #include <winsock2.h>
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
+#include <string>
+#include <utility>
+#include <vector>
 
 #pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
+
+    // Process the received message and send a response
+    void processMessage(const std::string& message, SOCKET clientSocket) {
+        // Process the message (e.g., convert to uppercase)
+        std::string response = message;
+        std::transform(response.begin(), response.end(), response.begin(), ::tolower);
+
+        // Send the response back to the client
+        send(clientSocket, response.c_str(), response.length(), 0);
+    }
 
 int main() {
     WSADATA wsaData;
@@ -20,7 +36,7 @@ int main() {
     sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK); // Bind to localhost
-    serverAddr.sin_port = htons(8080); // Use any available port
+    serverAddr.sin_port = htons(3000); // Use any available port
 
     if (bind(serverSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) == SOCKET_ERROR) {
         std::cerr << "Bind failed with error: " << WSAGetLastError() << std::endl;
@@ -36,7 +52,7 @@ int main() {
         return -1;
     }
 
-    std::cout << "Server listening on port 8080\n";
+    std::cout << "Server listening on port 3000\n";
 
     SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
     if (clientSocket == INVALID_SOCKET) {
@@ -46,6 +62,7 @@ int main() {
         return -1;
     }
 
+    // Inside your server loop after accepting a client connection
     while (true) {
         char buffer[1024];
         int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -54,8 +71,12 @@ int main() {
         } else {
             buffer[bytesReceived] = '\0'; // Null-terminate the received data
             std::cout << "Received message from client: " << buffer << std::endl;
+
+            // Process the message and send a response
+            processMessage(buffer, clientSocket);
         }
     }
+
 
     closesocket(clientSocket);
     closesocket(serverSocket);

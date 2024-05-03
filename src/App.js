@@ -13,15 +13,12 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [line, setLine] = useState("");
 
-  useEffect( () => {
+  useEffect(() => {
     console.log(line);
+    sendDataToServer(line); // Call the function to send data to the server
   }, [line]);
 
   function handleClick(rowIndex, colIndex) {
-    if (gameOver || gameState[rowIndex][colIndex] !== '0') {
-      return;
-    }
-
     const copy = [...gameState];
     let lowestEmptyRowIndex = rowIndex;
 
@@ -72,6 +69,22 @@ function App() {
     return false;
   }
 
+  // Function to send data to the server
+  // Function to send data to the server
+function sendDataToServer(data) {
+  fetch('http://localhost:3001/send-data', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ data }), // Ensure data is converted to JSON format
+  })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error('Error:', error));
+}
+
+
   return (
     <div className="container">
       <h1>Connect Four</h1>
@@ -83,10 +96,8 @@ function App() {
             ))}
           </div>
         ))}
-        
       </div>
       {gameOver && <div className="game-over">Game Over!</div>}
-      
     </div>
   );
 }

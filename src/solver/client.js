@@ -1,31 +1,35 @@
+const express = require('express');
+const cors = require('cors'); 
 const net = require('net');
 
-// Define the server details
-const serverPort = 8080;
-const serverAddress = '127.0.0.1'; 
-
-// Create a new TCP client
+const app = express();
+const serverPort = 3000;
+const serverAddress = '127.0.0.1';
 const client = new net.Socket();
 
-// Connect to the server
+app.use(cors());
+app.use(express.json());
+
+// Connect to the TCP server
 client.connect(serverPort, serverAddress, () => {
     console.log('Connected to the server');
-
-    // Send some data to the server
-    client.write('Hello, server!');
-
-    // Handle data received from the server
-    client.on('data', (data) => {
-        console.log('Received from server:', data.toString());
-    });
-
-    // Handle server connection closing
-    client.on('close', () => {
-        console.log('Connection closed');
-    });
 });
 
 // Handle connection errors
 client.on('error', (error) => {
     console.error('Error:', error.message);
+});
+
+// API endpoint to receive data from the React app
+app.post('/send-data', (req, res) => {
+    const { data } = req.body;
+
+    // Send the received data to the TCP server
+    client.write(data);
+
+    res.send('Data sent to TCP server');
+});
+
+app.listen(3001, () => {
+    console.log('Express server running on port 3001');
 });
