@@ -99,11 +99,10 @@ int main(int argc, char** argv) {
             std::cerr << "Line " << l << ": Invalid move " << (P.nbMoves() + 1) << " \"" << line << "\"" << std::endl;
         } else {
             unsigned long long start_time = getTimeMicrosec();
-            int score = solver.solve(P, 10, weak); // Specify depth as 10
+            int score = solver.solve(P, 15, weak); // Specify depth as 10
             unsigned long long end_time = getTimeMicrosec();
             std::cout << line << " " << score << " " << solver.getBestMove() + 1 << " " << solver.getNodeCount() << " " << (end_time - start_time);
         }
         std::cout << std::endl;
     }
 }
-
