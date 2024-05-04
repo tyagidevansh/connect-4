@@ -13,7 +13,7 @@
     void processMessage(const std::string& message, SOCKET clientSocket) {
         // Process the message (e.g., convert to uppercase)
         std::string response = message;
-        std::transform(response.begin(), response.end(), response.begin(), ::tolower);
+        //std::transform(response.begin(), response.end(), response.begin(), ::tolower);
 
         // Send the response back to the client
         send(clientSocket, response.c_str(), response.length(), 0);

@@ -69,7 +69,7 @@ function App() {
     return false;
   }
 
-  // Function to send data to the server
+
   // Function to send data to the server
 function sendDataToServer(data) {
   fetch('http://localhost:3001/send-data', {

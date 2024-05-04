@@ -27,7 +27,10 @@ app.post('/send-data', (req, res) => {
     // Send the received data to the TCP server
     client.write(data);
 
-    res.send('Data sent to TCP server');
+    client.on('data', (data) => {
+        console.log('Received from server:', data.toString());
+        res.json({ message: 'Data received successfully' });
+    });
 });
 
 app.listen(3001, () => {
