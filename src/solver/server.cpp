@@ -2,22 +2,47 @@
 #include <winsock2.h>
 #include <algorithm>
 #include <cctype>
+#include <cassert>
+#include <sys/time.h>
 #include <iomanip>
 #include <string>
 #include <utility>
 #include <vector>
+#include "position.hpp"
+#include "solver.hpp"
 
-#pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
+//#pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
 
-    // Process the received message and send a response
-    void processMessage(const std::string& message, SOCKET clientSocket) {
-        // Process the message (e.g., convert to uppercase)
-        std::string response = message;
-        //std::transform(response.begin(), response.end(), response.begin(), ::tolower);
+unsigned long long getTimeMicrosec() {
+    timeval NOW;
+    gettimeofday(&NOW, NULL);
+    return NOW.tv_sec * 1000000LL + NOW.tv_usec;    
+}
 
-        // Send the response back to the client
-        send(clientSocket, response.c_str(), response.length(), 0);
+
+// Process the received message and send a response
+void processMessage(const std::string& message, SOCKET clientSocket) {
+    std::string line = message;
+    std::string response;
+
+    Solver solver;
+    bool weak = false;
+    Position P;
+
+    if (P.play(line) != line.size()) {
+        response = "Invalid move";  
+    } else {
+        unsigned long long start_time = getTimeMicrosec();
+        int score = solver.solve(P, 15, weak);
+        unsigned long long end_time = getTimeMicrosec();
+
+        response = " Time: " + std::to_string(end_time - start_time) + " | Best Move: " + std::to_string(solver.getBestMove() + 1) + " | Score: " + std::to_string(score);
+
     }
+    
+
+    send(clientSocket, response.c_str(), response.length(), 0);
+}
 
 int main() {
     WSADATA wsaData;

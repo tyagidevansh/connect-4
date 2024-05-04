@@ -77,32 +77,3 @@ namespace GameSolver { namespace Connect4 {
             }
         };
 }}
-
-#include <sys/time.h>
-unsigned long long getTimeMicrosec() {
-    timeval NOW;
-    gettimeofday(&NOW, NULL);
-    return NOW.tv_sec * 1000000LL + NOW.tv_usec;    
-}
-
-#include <iostream>
-int main(int argc, char** argv) {
-    Solver solver;
-
-    bool weak = false;
-    if (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'w') weak = true;
-    std::string line;
-
-    for (int l = 1; std::getline(std::cin, line); l++) {
-        Position P;
-        if (P.play(line) != line.size()) {
-            std::cerr << "Line " << l << ": Invalid move " << (P.nbMoves() + 1) << " \"" << line << "\"" << std::endl;
-        } else {
-            unsigned long long start_time = getTimeMicrosec();
-            int score = solver.solve(P, 15, weak); // Specify depth as 10
-            unsigned long long end_time = getTimeMicrosec();
-            std::cout << line << " " << score << " " << solver.getBestMove() + 1 << " " << solver.getNodeCount() << " " << (end_time - start_time);
-        }
-        std::cout << std::endl;
-    }
-}

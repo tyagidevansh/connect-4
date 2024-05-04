@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors'); 
+const cors = require('cors');
 const net = require('net');
 
 const app = express();
@@ -27,10 +27,14 @@ app.post('/send-data', (req, res) => {
     // Send the received data to the TCP server
     client.write(data);
 
-    client.on('data', (data) => {
-        console.log('Received from server:', data.toString());
-        res.json({ message: 'Data received successfully' });
-    });
+    // Set a response immediately to acknowledge receipt
+    res.json({ message: 'Data received successfully' });
+});
+
+// Handle data received from the TCP server
+client.on('data', (data) => {
+    console.log('Received from server:', data.toString());
+    // Process the data received from the server as needed
 });
 
 app.listen(3001, () => {
