@@ -12,31 +12,37 @@ app.use(express.json());
 
 // Connect to the TCP server
 client.connect(serverPort, serverAddress, () => {
-    console.log('Connected to the server');
+  console.log('Connected to the server');
 });
 
 // Handle connection errors
 client.on('error', (error) => {
-    console.error('Error:', error.message);
+  console.error('Error:', error.message);
 });
 
 // API endpoint to receive data from the React app
 app.post('/send-data', (req, res) => {
-    const { data } = req.body;
+  const { data } = req.body;
 
-    // Send the received data to the TCP server
-    client.write(data);
+  // Send the received data to the TCP server
+  client.write(data);
 
-    // Set a response immediately to acknowledge receipt
-    res.json({ message: 'Data received successfully' });
-});
+  // Create a buffer to store the received data
+  const receivedData = [];
 
-// Handle data received from the TCP server
-client.on('data', (data) => {
+  // Handle data received from the TCP server
+  client.on('data', (data) => {
     console.log('Received from server:', data.toString());
-    // Process the data received from the server as needed
+    receivedData.push(data.toString());
+  });
+
+  // Send the response after receiving data from the server
+  client.once('data', () => {
+    res.json({ message: receivedData.join('') });
+    receivedData.length = 0; // Clear the buffer
+  });
 });
 
 app.listen(3001, () => {
-    console.log('Express server running on port 3001');
+  console.log('Express server running on port 3001');
 });
