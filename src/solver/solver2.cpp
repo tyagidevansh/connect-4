@@ -9,6 +9,7 @@ namespace GameSolver { namespace Connect4 {
         private:
             unsigned long long nodeCount;
             int bestMove;
+            int columnOrder[Position::WIDTH];
 
             int negamax(const Position &P, int alpha, int beta, int depth) {
                 assert(alpha < beta);  // Score window
@@ -38,9 +39,9 @@ namespace GameSolver { namespace Connect4 {
 
                 int bestScore = -max; // Initialize bestScore to the lowest possible value
                 for (int x = 0; x < Position::WIDTH; x++) {
-                    if (P.canPlay(x)) {
+                    if (P.canPlay(columnOrder[x])) {
                         Position P2(P);
-                        P2.play(x);
+                        P2.play(columnOrder[x]);
                         int score = -negamax(P2, -beta, -alpha, depth - 1); // Decrement depth here
 
                         if (score >= beta) {
@@ -58,7 +59,11 @@ namespace GameSolver { namespace Connect4 {
             }
 
         public:
-            Solver() : nodeCount(0), bestMove(-1) {} // Initialize bestMove in the constructor
+            Solver() : nodeCount(0), bestMove(-1) {
+                for(int i = 0; i < Position::WIDTH; i++) {
+                    columnOrder[i] = Position::WIDTH/2 + (1-2*(i%2))*(i+1)/2;
+                }
+            } // Initialize bestMove in the constructor
 
             int solve(const Position &P, int depth, bool weak = false) { // Add depth parameter to solve
                 nodeCount = 0;
@@ -99,7 +104,7 @@ int main(int argc, char** argv) {
             std::cerr << "Line " << l << ": Invalid move " << (P.nbMoves() + 1) << " \"" << line << "\"" << std::endl;
         } else {
             unsigned long long start_time = getTimeMicrosec();
-            int score = solver.solve(P, 10, weak); // Specify depth as 10
+            int score = solver.solve(P, 25, weak); // Specify depth as 10
             unsigned long long end_time = getTimeMicrosec();
             std::cout << line << " " << score << " " << solver.getBestMove() + 1 << " " << solver.getNodeCount() << " " << (end_time - start_time);
         }
