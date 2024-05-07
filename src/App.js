@@ -5,6 +5,10 @@ function Cell({ value, onCellClick }) {
   return <button className={`cell ${value}`} onClick={onCellClick}>{value}</button>;
 }
 
+function PlayAgain({onButtonClick}) {
+  return <button className='playAgainButton' onClick={onButtonClick}>Play Again</button>
+}
+
 function App() {
   const boardWidth = 7;
   const boardHeight = 6;
@@ -28,6 +32,9 @@ function App() {
     while (lowestEmptyRowIndex < boardHeight - 1 && copy[lowestEmptyRowIndex + 1][colIndex] === '0') {
       lowestEmptyRowIndex++;
     }
+    if (copy[lowestEmptyRowIndex][colIndex] === 'R' || copy[lowestEmptyRowIndex][colIndex] === 'B') {
+      return;
+    }
     copy[lowestEmptyRowIndex][colIndex] = isRedNext ? 'R' : 'B';
     setGameState(copy);
     setLine(line + String(colIndex + 1));
@@ -35,6 +42,19 @@ function App() {
       setGameOver(true);
     }
     setIsRedNext(!isRedNext);
+  }
+
+  function handlePlayAgain() {
+    const copy = [...gameState];  
+    for (let i = 0; i < boardHeight; i++) {
+      for (let j = 0; j < boardWidth; j++) {
+        copy[i][j] = '0';
+      }
+    }
+    setGameState(copy);
+    setLine("");
+    setIsRedNext(true);
+    setGameOver(false);
   }
 
   function checkForWin(rowIndex, colIndex) {
@@ -99,6 +119,7 @@ function App() {
         ))}
       </div>
       {gameOver && <div className="game-over">Game Over!</div>}
+      <PlayAgain onButtonClick={() => handlePlayAgain()}/>
     </div>
   );
 }

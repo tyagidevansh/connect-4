@@ -19,6 +19,7 @@ package.json
 .env.development.local
 .env.test.local
 .env.production.local
+src\solver\solver2.cpp
 
 npm-debug.log*
 yarn-debug.log*
