@@ -33,7 +33,7 @@ void processMessage(const std::string& message, SOCKET clientSocket) {
         response = "Invalid move";  
     } else {
         unsigned long long start_time = getTimeMicrosec();
-        int score = solver.solve(P, 15, weak);
+        int score = solver.solve(P, 30, weak);
         unsigned long long end_time = getTimeMicrosec();
 
         response = " Time: " + std::to_string(end_time - start_time) + " | Best Move: " + std::to_string(solver.getBestMove() + 1) + " | Score: " + std::to_string(score);

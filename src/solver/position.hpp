@@ -4,12 +4,16 @@
 #include <string>
 #include <cstdint>
 
+
 namespace GameSolver { namespace Connect4 {
 
     class Position {
         public:
             static const int WIDTH = 7;
             static const int HEIGHT = 6;
+            static const int MIN_SCORE = -(WIDTH*HEIGHT)/2 + 3;
+            static const int MAX_SCORE = (WIDTH*HEIGHT+1)/2 - 3;
+            
             static_assert(WIDTH < 10, "Board's width must be less than 10");
 
             bool canPlay(int col) const {
