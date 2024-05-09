@@ -20,7 +20,7 @@ clean:
 # CXX=g++
 # CXXFLAGS=--std=c++11 -Wall -Wextra -Werror
 
-# SRCS=solver2.cpp
+# SRCS=solver.cpp
 # OBJS=$(SRCS:.cpp=.o)
 
 # all: solver
