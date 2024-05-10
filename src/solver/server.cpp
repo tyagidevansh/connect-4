@@ -11,12 +11,16 @@
 #include "position.hpp"
 #include "solver.hpp"
 
-//#pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
-
 unsigned long long getTimeMicrosec() {
     timeval NOW;
     gettimeofday(&NOW, NULL);
     return NOW.tv_sec * 1000000LL + NOW.tv_usec;    
+}
+
+int getRandomScore() {
+    std::srand(std::time(nullptr));
+    int random = std::rand() % 7;
+    return random;
 }
 
 
@@ -33,14 +37,35 @@ void processMessage(const std::string& message, SOCKET clientSocket) {
         response = "Invalid move";  
     } else {
         unsigned long long start_time = getTimeMicrosec();
-        int score = solver.solve(P, weak);
+        int score = solver.solve(P, 15, weak);
         unsigned long long end_time = getTimeMicrosec();
+        int bestMove = solver.getBestMove() + 1;
 
-        response = " Time: " + std::to_string(end_time - start_time) + " | Best Move: " + std::to_string(solver.getBestMove() + 1) + " | Score: " + std::to_string(score);
+        if (bestMove == 1) {
+            if(P.canOpponentWin(1)) {
+                std::srand(std::time(nullptr));
+                bestMove = (std::rand() % 6)+2;
+            } else if (P.isWinningMove(1)) {
+                bestMove = 1;
+            } else {
+                bestMove = getRandomScore() + 1;
+                while (!P.canPlay(bestMove)) {
+                    bestMove = getRandomScore() + 1;
+                }
+            }
+        } 
+
+        if (bestMove == 0){
+            bestMove = getRandomScore() + 1;
+            while (!P.canPlay(bestMove)) {
+                bestMove = getRandomScore() + 1;
+            }
+        }
+        
+        response = " Time: " + std::to_string(end_time - start_time) + " | Best Move: " + std::to_string(bestMove) + " | Returned move: " + std::to_string(solver.getBestMove() + 1) + " | Score: " + std::to_string(score);
 
     }
     
-
     send(clientSocket, response.c_str(), response.length(), 0);
 }
 
