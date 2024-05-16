@@ -1,90 +1,98 @@
-#ifndef POSITION_HPP
-#define POSITION_HPP
+  #ifndef POSITION_HPP
+  #define POSITION_HPP
 
-#include <string>
-#include <iostream>
+  #include <string>
+  #include <iostream>
 
-struct moveScore {
-    int move;
-    int score;
-};
+  struct moveScore {
+  int move;
+  int score;
+  };
 
-namespace GameSolver {namespace Connect4 {
-    class Position {
-        public:
-            static const int WIDTH = 7;
-            static const int HEIGHT = 6;
-            static const int MOVES_SEARCHED = 10;
-            static_assert(WIDTH < 10, "Board's width must be less than 10");
+  namespace GameSolver {namespace Connect4 {
+  class Position {
+  public:
+    static const int WIDTH = 7;
+    static const int HEIGHT = 6;
+    static const int MOVES_SEARCHED = 10;
+    static_assert(WIDTH < 10, "Board's width must be less than 10");
 
-            bool canPlay(int col) const {
-                return height[col] < HEIGHT; 
-            }
+    bool canPlay(int col) const {
+        return height[col] < HEIGHT; 
+    }
 
-            bool canOpponentWin(int col) {
-                if (!canPlay(col)) return false; 
+    // bool isInstantLoss(int col) {
+    //     int opponentMove = 1 + moves % 2;
+    //     board[col][height[col]] = opponentMove;
+    //     height[col]++;
+    // }
 
-                
-                int opponentMove = 1 + moves % 2; 
-                board[col][height[col]] = opponentMove;
-                height[col]++;
+    bool canOpponentWin(int col) {
+      
+      //check for the 1st row if no prior moves have occured in it
 
-                bool opponentWin = isWinningMove(col);
+      if (!canPlay(col)) return false; 
 
-                height[col]--;
-                board[col][height[col]] = 0;
+      int opponentMove = 1 + moves % 2; 
+      board[col][height[col]] = opponentMove;
+      height[col]++;
 
-                return opponentWin;
-            }
+      bool opponentWin = isWinningMove(col);
 
-            void play(int col) {
-                board[col][height[col]] = 1 + moves % 2;
-                height[col]++;
-                moves++;
-            }
+      height[col]--;
+      board[col][height[col]] = 0;
 
-            //initialize board
-            unsigned int play(std::string seq) {
-                for (unsigned int i = 0; i < seq.size(); i++) {
-                    int col = seq[i] - '1';
-                    if (col < 0 || col >= Position::WIDTH || !canPlay(col) || isWinningMove(col)) return i;
-                    play(col);
-                }
-                return seq.size();
-            }
+      return opponentWin;
+    }
 
-            bool isWinningMove(int col) const {
-                int current_player = 1 + moves % 2;
+    void play(int col) {
+        board[col][height[col]] = 1 + moves % 2;
+        height[col]++;
+        moves++;
+    }
 
-                if (height[col] >= 3
-                    && board[col][height[col]-1] == current_player
-                    && board[col][height[col]-2] == current_player
-                    && board[col][height[col]-3] == current_player)
-                    return true;
-                
-                for (int dy = -1; dy <= 1; dy++) {
-                    int nb = 0;
-                    for(int dx = -1; dx <= 1; dx += 1)
-                        for (int x = col + dx, y = height[col] + dx * dy; x >= 0 && x < WIDTH && y < HEIGHT && board[x][y] == current_player; nb++) {
-                            x += dx;
-                            y += dx * dy;
-                        }
-                    if (nb >= 3) return true;
-                }
-                return false;
-            }
+    //initialize board
+    unsigned int play(std::string seq) {
+        for (unsigned int i = 0; i < seq.size(); i++) {
+            int col = seq[i] - '1';
+            if (col < 0 || col >= Position::WIDTH || !canPlay(col) || isWinningMove(col)) return i;
+            play(col);
+        }
+        return seq.size();
+    }
 
-            unsigned int nbMoves() const  {
-                return moves;
-            }
+    bool isWinningMove(int col) const {
+        int current_player = 1 + moves % 2;
 
-            Position() : board{0}, height{0}, moves{0} {}
+        if (height[col] >= 3
+            && board[col][height[col]-1] == current_player
+            && board[col][height[col]-2] == current_player
+            && board[col][height[col]-3] == current_player)
+            return true;
         
-        private:
-            int board[WIDTH][HEIGHT];
-            int height[WIDTH];
-            unsigned int moves;
-    };
-}}
+        for (int dy = -1; dy <= 1; dy++) {
+            int nb = 0;
+            for(int dx = -1; dx <= 1; dx += 1)
+                for (int x = col + dx, y = height[col] + dx * dy; x >= 0 && x < WIDTH && y < HEIGHT && board[x][y] == current_player; nb++) {
+                    x += dx;
+                    y += dx * dy;
+                }
+            if (nb >= 3) return true;
+        }
+        return false;
+    }
 
-#endif // !POSITION_HPP
+    unsigned int nbMoves() const  {
+        return moves;
+    }
+
+    Position() : board{0}, height{0}, moves{0} {}
+
+  private:
+    int board[WIDTH][HEIGHT];
+    int height[WIDTH];
+    unsigned int moves;
+  };
+  }}
+
+  #endif // !POSITION_HPP

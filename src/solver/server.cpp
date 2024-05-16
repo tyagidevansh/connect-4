@@ -29,6 +29,27 @@ void processMessage(const std::string& message, SOCKET clientSocket) {
     std::string line = message;
     std::string response;
 
+    if (line.length() <= 4) {
+        int bestMove;
+        if (getRandomScore() % 2 == 0) {
+            if (line.back() < '7') { 
+                bestMove = std::stoi(std::string(1, line.back())) + 1; 
+            } else {
+                bestMove = 4;
+            }
+        } else {
+            if (line.back() > '1') { 
+                bestMove = std::stoi(std::string(1, line.back())) - 1; 
+            } else {
+                bestMove = 3;
+            }
+    }
+        response = " Time: " + std::to_string(1) + " | Best Move: " + std::to_string(bestMove) + " | Returned move: " + std::to_string(bestMove) + " | Score: " + std::to_string(0);
+        send(clientSocket, response.c_str(), response.length(), 0);
+        return;
+    }
+
+
     Solver solver;
     bool weak = false;
     Position P;
@@ -43,8 +64,9 @@ void processMessage(const std::string& message, SOCKET clientSocket) {
 
         if (bestMove == 1) {
             if(P.canOpponentWin(1)) {
-                std::srand(std::time(nullptr));
-                bestMove = (std::rand() % 6)+2;
+                bestMove = 1;
+                // std::srand(std::time(nullptr));
+                // bestMove = (std::rand() % 6)+2;
             } else if (P.isWinningMove(1)) {
                 bestMove = 1;
             } else {
@@ -61,7 +83,11 @@ void processMessage(const std::string& message, SOCKET clientSocket) {
                 bestMove = getRandomScore() + 1;
             }
         }
-        
+
+        if(P.canOpponentWin(1)) {
+           bestMove = 1;
+        }
+
         response = " Time: " + std::to_string(end_time - start_time) + " | Best Move: " + std::to_string(bestMove) + " | Returned move: " + std::to_string(solver.getBestMove() + 1) + " | Score: " + std::to_string(score);
 
     }
@@ -86,7 +112,7 @@ int main() {
     sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK); // Bind to localhost
-    serverAddr.sin_port = htons(3000); // Use any available port
+    serverAddr.sin_port = htons(3000); // same port as react
 
     if (bind(serverSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) == SOCKET_ERROR) {
         std::cerr << "Bind failed with error: " << WSAGetLastError() << std::endl;
@@ -136,4 +162,3 @@ int main() {
 }
 
 //g++ server.cpp -l ws2_32
-//a.exe

@@ -2,13 +2,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
+  font-family:  Arial, sans-serif;
+  background: radial-gradient(circle, #180755 20%, rgb(5, 10, 33) 80%);
   min-height: 100vh;
 }
 
 h1 {
-  margin-bottom: 20px;
+  margin-bottom: 70px;
+  margin-top: 40px;
+  color: #fff;
 }
 
 .game-board {
@@ -16,7 +18,7 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  background-color: #4682b4; 
+  background-color: #7562d0; 
   padding: 20px; 
   border-radius: 10px; 
 }
@@ -38,16 +40,54 @@ h1 {
   margin-right: 5px;
   background-color: #fff; 
   color: #fff;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
+}
+
+.cell.R,
+.cell.Y {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease;
 }
 
 .cell.R {
-  background-color: red;
-  color: red;
+  background-color: #ff4444; 
+  color: #ff4444; 
 }
 
-.cell.B {
-  background-color: blue;
-  color: blue;
+.cell.Y {
+  background-color: #ffd700; 
+  color: #ffd700; 
+}
+
+.cell:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+
+@keyframes fall {
+  0% {
+    transform: translateY(-100px); /* Start position above the board */
+    opacity: 1; /* Fully visible */
+  }
+  100% {
+    transform: translateY(0); /* End position at the board */
+    opacity: 1; /* Fully visible */
+  }
+}
+
+
+.cell.fall-animation-doesnt-work {
+  animation: fall 0.5s ease-in-out forwards; /* Falling animation */
 }
 
 .game-over {
@@ -55,4 +95,38 @@ h1 {
   font-size: 24px;
   font-weight: bold;
   color: red;
+}
+
+.playAgain {
+  margin-top: 30px;
+  
+}
+
+.playAgainButton {
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-decoration: none;
+  text-transform: uppercase;
+  color: #000;
+  cursor: pointer;
+  border: 3px solid;
+  padding: 0.25em 0.5em;
+  box-shadow: 1px 1px 0px 0px, 2px 2px 0px 0px, 3px 3px 0px 0px, 4px 4px 0px 0px, 5px 5px 0px 0px;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.playAgainButton:active {
+  box-shadow: 0px 0px 0px 0px;
+  top: 5px;
+  left: 5px;
+}
+
+@media (min-width: 768px) {
+  .playAgainButton {
+    padding: 0.25em 0.75em;
+  }
 }

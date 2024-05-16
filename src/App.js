@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-function Cell({ value, onCellClick }) {
-  return <button className={`cell ${value}`} onClick={onCellClick}>{value}</button>;
+function Cell({ value, onCellClick, isAnimating, lastCell, rowIndex, colIndex }) {
+  const isLastCell = lastCell && lastCell.rowIndex == rowIndex && lastCell.colIndex == colIndex;
+  console.log(isLastCell, rowIndex, colIndex);
+  return (
+    <button
+    className={`cell ${value} ${isAnimating && isLastCell ? 'fall-animation' : ''}`}
+      onClick={onCellClick}
+      disabled={isAnimating}
+    >
+      {value}
+    </button>
+  );
 }
 
 function PlayAgain({onButtonClick}) {
-  return <button className='playAgainButton' onClick={onButtonClick}>Play Again</button>
+  return <button className='playAgainButton' onClick={onButtonClick}> Reset </button>
 }
 
 function App() {
@@ -16,7 +26,8 @@ function App() {
   const [isRedNext, setIsRedNext] = useState(true);
   const [gameOver, setGameOver] = useState(false);
   const [line, setLine] = useState("");
-  const [nextmove, setNextMove] = useState("");
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [lastCell, setLastCell] = useState(null);
 
   useEffect(() => {
     console.log(line);
@@ -26,16 +37,22 @@ function App() {
   }, [line, isRedNext]);
 
   function handleClick(rowIndex, colIndex) {
+    setLastCell({rowIndex, colIndex});
+    setIsAnimating(true); // Set animation flag to true
+    setTimeout(() => {
+      setIsAnimating(false); // Reset animation flag after animation duration
+    }, 500);
+
     const copy = [...gameState];
 
     let lowestEmptyRowIndex = rowIndex;
     while (lowestEmptyRowIndex < boardHeight - 1 && copy[lowestEmptyRowIndex + 1][colIndex] === '0') {
       lowestEmptyRowIndex++;
     }
-    if (copy[lowestEmptyRowIndex][colIndex] === 'R' || copy[lowestEmptyRowIndex][colIndex] === 'B') {
+    if (copy[lowestEmptyRowIndex][colIndex] === 'R' || copy[lowestEmptyRowIndex][colIndex] === 'Y') {
       return;
     }
-    copy[lowestEmptyRowIndex][colIndex] = isRedNext ? 'R' : 'B';
+    copy[lowestEmptyRowIndex][colIndex] = isRedNext ? 'R' : 'Y';
     setGameState(copy);
     setLine(line + String(colIndex + 1));
     if (checkForWin(lowestEmptyRowIndex, colIndex)) {
@@ -58,7 +75,7 @@ function App() {
   }
 
   function checkForWin(rowIndex, colIndex) {
-    const token = isRedNext ? 'R' : 'B';
+    const token = isRedNext ? 'R' : 'Y';
     const directions = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (const [dx, dy] of directions) {
       let count = 1;
@@ -108,18 +125,20 @@ function App() {
 
   return (
     <div className="container">
-      <h1>Connect Four</h1>
+      <h1>Connect Four Solver</h1>
       <div className="game-board">
         {gameState.map((row, rowIndex) => (
           <div key={rowIndex} className="row">
             {row.map((cell, colIndex) => (
-              <Cell key={colIndex} value={cell} onCellClick={() => handleClick(rowIndex, colIndex)} />
+              <Cell key={colIndex} value={cell} onCellClick={() => handleClick(rowIndex, colIndex)} isAnimating = {isAnimating} lastCell = {lastCell} rowIndex = {rowIndex} colIndex = {colIndex}/>
             ))}
           </div>
         ))}
       </div>
       {gameOver && <div className="game-over">Game Over!</div>}
-      <PlayAgain onButtonClick={() => handlePlayAgain()}/>
+      <div className='playAgain'>
+        <PlayAgain onButtonClick={() => handlePlayAgain()}/>
+      </div>
     </div>
   );
 }
