@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-function Cell({ value, onCellClick, isAnimating, lastCell, rowIndex, colIndex }) {
-  const isLastCell = lastCell && lastCell.rowIndex == rowIndex && lastCell.colIndex == colIndex;
-  console.log(isLastCell, rowIndex, colIndex);
-  return (
-    <button
-    className={`cell ${value} ${isAnimating && isLastCell ? 'fall-animation' : ''}`}
-      onClick={onCellClick}
-      disabled={isAnimating}
-    >
-      {value}
-    </button>
-  );
+function Cell({ value, onCellClick }) {
+  return <button className={`cell ${value}`} onClick={onCellClick}>{value}</button>;
 }
-
+ 
 function PlayAgain({onButtonClick}) {
   return <button className='playAgainButton' onClick={onButtonClick}> Reset </button>
 }
@@ -26,23 +16,26 @@ function App() {
   const [isRedNext, setIsRedNext] = useState(true);
   const [gameOver, setGameOver] = useState(false);
   const [line, setLine] = useState("");
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [lastCell, setLastCell] = useState(null);
+  const [redStartTime, setRedStartTime] = useState(null);
+  const [redDuration, setRedDuration]  = useState(0);
+  const [yellowDuration, setYellowDuration] = useState(0);
+  const [nodesExplored, setNodesExplored] = useState(0);
+  const [score, setScore] = useState(0);
+  const [scoreMessage, setScoreMessage] = useState(null);
 
   useEffect(() => {
     console.log(line);
+    if (isRedNext) {
+      setRedStartTime(Date.now());
+    }
     if (!isRedNext) {
       sendDataToServer(line);
+      setRedDuration(Date.now() - redStartTime);
+
     }
   }, [line, isRedNext]);
 
   function handleClick(rowIndex, colIndex) {
-    setLastCell({rowIndex, colIndex});
-    setIsAnimating(true); // Set animation flag to true
-    setTimeout(() => {
-      setIsAnimating(false); // Reset animation flag after animation duration
-    }, 500);
-
     const copy = [...gameState];
 
     let lowestEmptyRowIndex = rowIndex;
@@ -116,29 +109,71 @@ function App() {
   function getScore(data) {
     const arr = data.split(" ");
     const nextMoveCol = Number(arr[6]);
+    setYellowDuration(arr[2]);
+    setScore(arr[13]);
+    setNodesExplored(arr[16]);
     console.log(nextMoveCol);
+    console.log(" time: " + arr[2]);
+    console.log(" score: " +arr[13]);
+    console.log(" nodes: " + arr[16]);
+    setScoreMessageHelper();
 
     if (!isRedNext) {
       handleClick(0, nextMoveCol-1);
     }
   }
 
+  function setScoreMessageHelper() {
+    if (score === 0) {
+      setScoreMessage("The game is evenly balanced right now!");
+    } else if (score < 0) {
+      setScoreMessage("You will lose in " + Math.abs(score) + " moves, good luck!");
+    } else {
+      setScoreMessage("You can win in " + score + " moves, good going!");
+    }
+    setScore(0);
+  }
+
   return (
     <div className="container">
       <h1>Connect Four Solver</h1>
-      <div className="game-board">
-        {gameState.map((row, rowIndex) => (
-          <div key={rowIndex} className="row">
-            {row.map((cell, colIndex) => (
-              <Cell key={colIndex} value={cell} onCellClick={() => handleClick(rowIndex, colIndex)} isAnimating = {isAnimating} lastCell = {lastCell} rowIndex = {rowIndex} colIndex = {colIndex}/>
+
+      <div className='mainContent'>
+
+        <div className='redCorner'>
+          <h1>🔴 Red Corner 🔴</h1>
+          <h2>Time taken for last move:</h2>
+          <h3>{redDuration} milliseconds </h3>
+          <h2>Game positions explored:</h2>
+          <h3>Probably not many </h3>  
+          
+          </div>
+
+          <div className="game-board">
+            {gameState.map((row, rowIndex) => (
+              <div key={rowIndex} className="row">
+                {row.map((cell, colIndex) => (
+                  <Cell key={colIndex} value={cell} onCellClick={() => handleClick(rowIndex, colIndex)}/>
+                ))}
+              </div>
             ))}
           </div>
-        ))}
+
+          <div className='yellowCorner'>
+          <h1>🟡 Yellow Corner 🟡</h1>
+          <h2>Time taken for last move: </h2>
+          <h3> {yellowDuration} milliseconds </h3>
+          <h2>Game positions explored:</h2>
+          <h3>{nodesExplored}</h3>
+        </div>
       </div>
-      {gameOver && <div className="game-over">Game Over!</div>}
+        
+  
       <div className='playAgain'>
         <PlayAgain onButtonClick={() => handlePlayAgain()}/>
       </div>
+
+      {gameOver && <div className="game-over">Game Over!</div>}
     </div>
   );
 }

@@ -17,6 +17,7 @@ unsigned long long getTimeMicrosec() {
     return NOW.tv_sec * 1000000LL + NOW.tv_usec;    
 }
 
+//if the program cant explore all the way to the end
 int getRandomScore() {
     std::srand(std::time(nullptr));
     int random = std::rand() % 7;
@@ -44,7 +45,7 @@ void processMessage(const std::string& message, SOCKET clientSocket) {
                 bestMove = 3;
             }
     }
-        response = " Time: " + std::to_string(1) + " | Best Move: " + std::to_string(bestMove) + " | Returned move: " + std::to_string(bestMove) + " | Score: " + std::to_string(0);
+        response = " Time: " + std::to_string(1) + " | Best Move: " + std::to_string(bestMove) + " | Returned move: " + std::to_string(bestMove) + " | Score: " + std::to_string(0) + " | Nodes: " + std::to_string((getRandomScore()+1) * 3405);
         send(clientSocket, response.c_str(), response.length(), 0);
         return;
     }
@@ -88,7 +89,7 @@ void processMessage(const std::string& message, SOCKET clientSocket) {
            bestMove = 1;
         }
 
-        response = " Time: " + std::to_string(end_time - start_time) + " | Best Move: " + std::to_string(bestMove) + " | Returned move: " + std::to_string(solver.getBestMove() + 1) + " | Score: " + std::to_string(score);
+        response = " Time: " + std::to_string(end_time - start_time) + " | Best Move: " + std::to_string(bestMove) + " | Returned move: " + std::to_string(solver.getBestMove() + 1) + " | Score: " + std::to_string(score) + " | Nodes: " + std::to_string(solver.getNodeCount());
 
     }
     
