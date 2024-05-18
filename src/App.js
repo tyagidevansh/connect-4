@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-function Cell({ value, onCellClick }) {
-  return <button className={`cell ${value}`} onClick={onCellClick}>{value}</button>;
+function Cell({ value, onCellClick, isWinningCell, falling }) {
+  return (
+    <button
+      className={`cell ${value} ${isWinningCell ? 'winning-cell' : ''} ${falling ? 'falling' : ''}`}
+      onClick={onCellClick}
+    >
+      {value}
+    </button>
+  );
 }
- 
-function PlayAgain({onButtonClick}) {
+
+function PlayAgain({ onButtonClick }) {
   return <button className='playAgainButton' onClick={onButtonClick}> Reset </button>
 }
 
@@ -17,23 +24,26 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [line, setLine] = useState("");
   const [redStartTime, setRedStartTime] = useState(null);
-  const [redDuration, setRedDuration]  = useState(0);
+  const [redDuration, setRedDuration] = useState(0);
   const [yellowDuration, setYellowDuration] = useState(0);
   const [nodesExplored, setNodesExplored] = useState(0);
   const [score, setScore] = useState(0);
+  const [winners, setWinners] = useState([]);
   const [scoreMessage, setScoreMessage] = useState(null);
+  const [fallingCell, setFallingCell] = useState(null);
 
   useEffect(() => {
-    console.log(line);
     if (isRedNext) {
       setRedStartTime(Date.now());
-    }
-    if (!isRedNext) {
+    } else {
       sendDataToServer(line);
       setRedDuration(Date.now() - redStartTime);
-
     }
   }, [line, isRedNext]);
+
+  useEffect(() => {
+    console.log(winners);
+  }, [winners]);
 
   function handleClick(rowIndex, colIndex) {
     const copy = [...gameState];
@@ -47,6 +57,7 @@ function App() {
     }
     copy[lowestEmptyRowIndex][colIndex] = isRedNext ? 'R' : 'Y';
     setGameState(copy);
+    setFallingCell({ rowIndex: lowestEmptyRowIndex, colIndex });
     setLine(line + String(colIndex + 1));
     if (checkForWin(lowestEmptyRowIndex, colIndex)) {
       setGameOver(true);
@@ -55,7 +66,7 @@ function App() {
   }
 
   function handlePlayAgain() {
-    const copy = [...gameState];  
+    const copy = [...gameState];
     for (let i = 0; i < boardHeight; i++) {
       for (let j = 0; j < boardWidth; j++) {
         copy[i][j] = '0';
@@ -68,13 +79,16 @@ function App() {
   }
 
   function checkForWin(rowIndex, colIndex) {
+    setWinners([]);
     const token = isRedNext ? 'R' : 'Y';
     const directions = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (const [dx, dy] of directions) {
       let count = 1;
       let row = rowIndex + dx;
       let col = colIndex + dy;
+      let arr = [[rowIndex, colIndex]];
       while (row >= 0 && row < boardHeight && col >= 0 && col < boardWidth && gameState[row][col] === token) {
+        arr.push([row, col]);
         count++;
         row += dx;
         col += dy;
@@ -82,11 +96,13 @@ function App() {
       row = rowIndex - dx;
       col = colIndex - dy;
       while (row >= 0 && row < boardHeight && col >= 0 && col < boardWidth && gameState[row][col] === token) {
+        arr.push([row, col]);
         count++;
         row -= dx;
         col -= dy;
       }
       if (count >= 4) {
+        setWinners(arr);
         return true;
       }
     }
@@ -112,14 +128,10 @@ function App() {
     setYellowDuration(arr[2]);
     setScore(arr[13]);
     setNodesExplored(arr[16]);
-    console.log(nextMoveCol);
-    console.log(" time: " + arr[2]);
-    console.log(" score: " +arr[13]);
-    console.log(" nodes: " + arr[16]);
     setScoreMessageHelper();
 
     if (!isRedNext) {
-      handleClick(0, nextMoveCol-1);
+      handleClick(0, nextMoveCol - 1);
     }
   }
 
@@ -134,6 +146,10 @@ function App() {
     setScore(0);
   }
 
+  function isWinningCell(rowIndex, colIndex) {
+    return winners.some(([winRow, winCol]) => winRow === rowIndex && winCol === colIndex);
+  }
+
   return (
     <div className="container">
       <h1>Connect Four Solver</h1>
@@ -145,21 +161,27 @@ function App() {
           <h2>Time taken for last move:</h2>
           <h3>{redDuration} milliseconds </h3>
           <h2>Game positions explored:</h2>
-          <h3>Probably not many </h3>  
-          
-          </div>
+          <h3>Probably not many </h3>
 
-          <div className="game-board">
-            {gameState.map((row, rowIndex) => (
-              <div key={rowIndex} className="row">
-                {row.map((cell, colIndex) => (
-                  <Cell key={colIndex} value={cell} onCellClick={() => handleClick(rowIndex, colIndex)}/>
-                ))}
-              </div>
-            ))}
-          </div>
+        </div>
 
-          <div className='yellowCorner'>
+        <div className="game-board">
+          {gameState.map((row, rowIndex) => (
+            <div key={rowIndex} className="row">
+              {row.map((cell, colIndex) => (
+                <Cell
+                  key={colIndex}
+                  value={cell}
+                  onCellClick={() => handleClick(rowIndex, colIndex)}
+                  isWinningCell={isWinningCell(rowIndex, colIndex)}
+                  falling={fallingCell && fallingCell.rowIndex === rowIndex && fallingCell.colIndex === colIndex}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <div className='yellowCorner'>
           <h1>🟡 Yellow Corner 🟡</h1>
           <h2>Time taken for last move: </h2>
           <h3> {yellowDuration} milliseconds </h3>
@@ -167,10 +189,10 @@ function App() {
           <h3>{nodesExplored}</h3>
         </div>
       </div>
-        
-  
+
+
       <div className='playAgain'>
-        <PlayAgain onButtonClick={() => handlePlayAgain()}/>
+        <PlayAgain onButtonClick={() => handlePlayAgain()} />
       </div>
 
       {gameOver && <div className="game-over">Game Over!</div>}
